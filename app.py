@@ -261,4 +261,5 @@ if __name__ == "__main__":
         outputs="text",
         title="Crypto Analysis Bot Status"
     )
-    iface.launch()
+    # Dòng code mới (Đã sửa lỗi)
+iface.launch(server_name="0.0.0.0", server_port=7860)
