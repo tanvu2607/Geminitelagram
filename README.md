@@ -1,2 +1,2 @@
 # Flutter APK Builder
-This repository contains a minimal Flutter application that builds an APK file using GitHub Actions.
+This repository contains a minimal Flutter application and a GitHub Actions workflow to build and sign a release APK.
