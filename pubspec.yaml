@@ -1,15 +1,1 @@
-
-name: geminitelagram
-description: "A Flutter graph plotting application."
-publish_to: 'none'
-version: 1.0.0+1
-
-environment:
-  sdk: '>=3.2.0 <4.0.0'
-
-dependencies:
-  flutter:
-    sdk: flutter
-  cupertino_icons: ^1.0.6
-  fl_chart: ^0.68.0
-  math_expressions: ^2.4.0
+<-- như đã viết ở trên -->
