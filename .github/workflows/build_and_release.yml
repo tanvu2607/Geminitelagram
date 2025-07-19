@@ -25,18 +25,23 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Flutter Project Structure
-        run: flutter create .
-
+      - name: Create Flutter Project Structure (if needed)
+        run: |
+          if [ ! -f "pubspec.yaml" ]; then
+            flutter create .
+          fi
+      
       - name: Get dependencies
         run: flutter pub get
 
       - name: Decode Keystore
         run: |
+          echo "Decoding keystore..."
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
         
       - name: Create key.properties
         run: |
+          echo "Creating key.properties..."
           echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/key.properties
