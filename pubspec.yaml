@@ -1,0 +1,16 @@
+name: apk_builder
+version: 1.0.0
+description: A new Flutter project.
+
+support_ios: false
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
