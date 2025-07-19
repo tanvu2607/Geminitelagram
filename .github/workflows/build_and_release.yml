@@ -25,13 +25,10 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Flutter Project Structure (if necessary)
+      - name: Create Flutter Project Structure (if needed)
         run: |
           if [ ! -f "pubspec.yaml" ]; then
-            echo "pubspec.yaml not found. Creating a new Flutter project..."
             flutter create .
-          else
-            echo "Project already exists."
           fi
       
       - name: Get dependencies
