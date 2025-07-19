@@ -1,86 +1,150 @@
 // DEPENDENCIES: http: ^1.2.1
-// DEPENDENCIES: provider: ^6.0.5
-
+// DEPENDENCIES: technical_indicators: ^1.1.2
+// DEPENDENCIES: google_generative_ai: ^0.4.0
+// DEPENDENCIES: flutter_dotenv: ^5.1.0
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:technical_indicators/technical_indicators.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  await dotenv.load(fileName: ".env");
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gemini Trade Analyzer',
+      title: 'AI Trading Assistant',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(title: 'AI Trading Assistant'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<Map<String, dynamic>> fetchMarketData() async {
-    // Replace with actual market data API endpoint
-    final response = await http.get(Uri.parse('https://api.example.com/marketdata'));
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load market data');
-    }
-  }
+  final _symbolController = TextEditingController();
+  final _intervalController = TextEditingController();
+  String _result = '';
+  bool _isLoading = false;
 
-  Future<void> sendToGeminiAPI(Map<String, dynamic> data) async {
-    // Replace with actual Gemini API endpoint and authentication
-    final response = await http.post(Uri.parse('https://api.gemini.com/your_endpoint'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          // Add your Gemini API key and secret here
-        },
-        body: jsonEncode(data));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to send data to Gemini API');
+  Future<void> _analyzeData() async {
+    setState(() {
+      _isLoading = true;
+      _result = '';
+    });
+    String symbol = _symbolController.text;
+    String interval = _intervalController.text;
+
+    try {
+      final binanceUrl = Uri.parse(
+          'https://api.binance.com/api/v3/klines?symbol=$symbol&interval=$interval&limit=50');
+      final response = await http.get(binanceUrl);
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        List<Candle> candles = [];
+        for (var candleData in jsonData) {
+          candles.add(Candle(
+              open: candleData[1].toDouble(),
+              high: candleData[2].toDouble(),
+              low: candleData[3].toDouble(),
+              close: candleData[4].toDouble(),
+              volume: candleData[5].toDouble()));
+        }
+        // Calculate indicators (example RSI)
+        final rsi = calculateRsi(candles, 14);
+        final macd = calculateMacd(candles, 12, 26, 9);
+
+
+        Map<String, dynamic> data = {
+          'symbol': symbol,
+          'interval': interval,
+          'rsi': rsi.last.toDouble(),
+          'macd': macd.last.toDouble()
+        };
+
+        final client = GenerativeAIClient(apiKey: dotenv.env['GEMINI_API_KEY']!);
+        final response = await client.generateText(prompt: 'Analyze this trading data: ${jsonEncode(data)}');
+        setState(() {
+          _result = response.text;
+        });
+      } else {
+        setState(() {
+          _result = 'Failed to fetch data from Binance.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _result = 'Error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    print("Data sent successfully to Gemini API");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gemini Trade Analyzer'),
+        title: Text(widget.title),
       ),
-      body: Center(
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: fetchMarketData(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              Map<String, dynamic> marketData = snapshot.data!;
-              // Perform calculations and analysis here using marketData
-              // Example: Calculate simple moving average
-              //double sma = calculateSMA(marketData);
-              sendToGeminiAPI(marketData);
-              return Text('Market Data Fetched and sent to Gemini!');
-            }
-          },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _symbolController,
+              decoration: const InputDecoration(labelText: 'Cặp giao dịch (e.g., BTCUSDT)'),
+            ),
+            TextField(
+              controller: _intervalController,
+              decoration: const InputDecoration(labelText: 'Khung thời gian (e.g., 1m, 1h, 1d)'),
+            ),
+            ElevatedButton(
+              onPressed: _analyzeData,
+              child: const Text('Phân Tích'),
+            ),
+            if (_isLoading)
+              const CircularProgressIndicator()
+            else
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(_result),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
-  //Example function - needs to be implemented based on specific requirements
-  //double calculateSMA(Map<String, dynamic> data){
-  //  return 0.0;
-  //}
+
+  @override
+  void dispose() {
+    _symbolController.dispose();
+    _intervalController.dispose();
+    super.dispose();
+  }
 }
