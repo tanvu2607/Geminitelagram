@@ -9,36 +9,29 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
       - name: Create Flutter Project Structure (if needed)
         run: |
           if [ ! -f "pubspec.yaml" ]; then
             flutter create .
           fi
-      
       - name: Get dependencies
         run: flutter pub get
-
       - name: Decode Keystore
         run: |
           echo "Decoding keystore..."
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-        
       - name: Create key.properties
         run: |
           echo "Creating key.properties..."
@@ -46,12 +39,10 @@ jobs:
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../app/upload-keystore.jks" >> android/key.properties
-
       - name: Build APK
         run: |
           flutter clean
           flutter build apk --release
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
