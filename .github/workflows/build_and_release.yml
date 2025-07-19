@@ -3,13 +3,13 @@ name: Build and Release Flutter APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17' # Use Java 17, recommended for modern Android builds
           distribution: 'temurin'
 
       - name: Set up Flutter
@@ -25,28 +25,32 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Flutter Project (if needed)
-        run: |
-          if [ ! -f "pubspec.yaml" ]; then
-            flutter create .
-          fi
+      # Create project structure if it doesn't exist. This makes the workflow robust.
+      - name: Create Flutter Project
+        run: flutter create .
 
       - name: Get dependencies
         run: flutter pub get
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+          echo "Decoding keystore..."
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
         
       - name: Create key.properties
         run: |
+          echo "Creating key.properties..."
           echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=my-release-key.keystore" >> android/key.properties
+          # The path to the keystore file relative to the 'android' directory
+          echo "storeFile=../app/upload-keystore.jks" >> android/key.properties
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          # Clean previous builds to be safe
+          flutter clean
+          flutter build apk --release
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
