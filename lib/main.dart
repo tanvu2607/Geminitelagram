@@ -1,41 +1,47 @@
-// DEPENDENCIES: None
-
+// DEPENDENCIES: fl_chart: ^0.68.0
+// DEPENDENCIES: math_expressions: ^2.4.0
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Graph Plotter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final TextEditingController _equationController = TextEditingController();
+  List<FlSpot> _data = [];
 
-  void _incrementCounter() {
+  void _plotGraph() {
+    String equation = _equationController.text;
+    ContextModel cm = ContextModel();
+    Variable x = Variable('x');
+    Expression exp = Parser().parse(equation);
     setState(() {
-      _counter++;
+      _data = [];
+      for (double i = -10; i <= 10; i += 0.1) {
+        cm.bindVariable(x, Number(i));
+        double y = exp.evaluate(EvaluationType.REAL, cm);
+        _data.add(FlSpot(i, y));
+      }
     });
   }
 
@@ -43,26 +49,41 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Graph Plotter'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+          children: [
+            TextField(
+              controller: _equationController,
+              decoration: InputDecoration(labelText: 'Enter Equation (e.g., sin(x), x*x)'),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _plotGraph,
+              child: Text('Plot Graph'),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: LineChart(
+                LineChartData(
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _data,
+                      isCurved: true,
+                    ),
+                  ],
+                  titlesData: FlTitlesData(
+                    show: true,
+                  ),
+                  gridData: FlGridData(show: true),
+                  borderData: FlBorderData(show: true),
+                ),
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
