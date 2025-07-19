@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Graph Plotter',
+      title: 'Equation Grapher',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -32,24 +32,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _plotGraph() {
     String equation = _equationController.text;
-    ContextModel cm = ContextModel();
-    Variable x = Variable('x');
-    Expression exp = Parser().parse(equation);
-    setState(() {
-      _data = [];
-      for (double i = -10; i <= 10; i += 0.1) {
-        cm.bindVariable(x, Number(i));
-        double y = exp.evaluate(EvaluationType.REAL, cm);
-        _data.add(FlSpot(i, y));
-      }
-    });
+    ContextModel contextModel = ContextModel();
+    var expression = Parser().parse(equation);
+    _data = [];
+    for (double x = -10; x <= 10; x += 0.1) {
+      contextModel.bindVariable(Variable('x'), Number(x));
+      double y = expression.evaluate(EvaluationType.REAL, contextModel);
+      _data.add(FlSpot(x, y));
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Graph Plotter'),
+        title: Text('Equation Grapher'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -57,28 +55,34 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             TextField(
               controller: _equationController,
-              decoration: InputDecoration(labelText: 'Enter Equation (e.g., sin(x), x*x)'),
+              decoration: InputDecoration(hintText: 'Enter equation (e.g., sin(x), x*x)'),
             ),
-            SizedBox(height: 16),
             ElevatedButton(
               onPressed: _plotGraph,
               child: Text('Plot Graph'),
             ),
-            SizedBox(height: 16),
             Expanded(
               child: LineChart(
                 LineChartData(
+                  gridData: FlGridData(show: true),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (value) => value.toInt().toString(),
+                    ),
+                    leftTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (value) => value.toInt().toString(),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: true),
                   lineBarsData: [
                     LineChartBarData(
                       spots: _data,
                       isCurved: true,
                     ),
                   ],
-                  titlesData: FlTitlesData(
-                    show: true,
-                  ),
-                  gridData: FlGridData(show: true),
-                  borderData: FlBorderData(show: true),
                 ),
               ),
             ),
