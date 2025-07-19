@@ -1,3 +1,2 @@
-# Simple Flask Web Application
-
-This is a basic Flask web application that displays a simple message.  It demonstrates a minimal Flask setup with HTML templating and CSS styling.
+# Flutter APK Builder
+This repository contains a minimal Flutter application that builds an APK file using GitHub Actions.
