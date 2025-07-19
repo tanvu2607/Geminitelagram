@@ -11,4 +11,5 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter:
-  uses-material-design: true
+  uses-material-design: true  fl_chart: ^0.68.0
+  math_expressions: ^2.4.0
