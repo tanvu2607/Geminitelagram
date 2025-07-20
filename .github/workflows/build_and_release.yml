@@ -1,4 +1,9 @@
 
+- name: Display pubspec.yaml content for debugging
+        run: cat pubspec.yaml
+
+      - name: Get dependencies
+        run: flutter pub get
 name: Build and Release Flutter APK
 
 on:
