@@ -1,5 +1,5 @@
 // DEPENDENCIES: http: ^1.2.1
-
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OkxApiService {
@@ -9,15 +9,16 @@ class OkxApiService {
         headers: {
           'Content-Type': 'application/json',
         },
-        queryParameters: {
+        params: {
           'instId': symbol,
-          'bar': timeframe
+          'bar': timeframe,
         });
 
     if (response.statusCode == 200) {
-      return List<dynamic>.from(jsonDecode(response.body)['data']);
+      final jsonData = jsonDecode(response.body);
+      return jsonData['data'];
     } else {
-      throw Exception('Failed to load candles: ${response.statusCode}');
+      throw Exception('Failed to load OKX candles');
     }
   }
 }
