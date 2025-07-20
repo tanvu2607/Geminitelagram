@@ -17,7 +17,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Use Java 17, recommended for modern Android builds
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Flutter
@@ -25,10 +25,15 @@ jobs:
         with:
           channel: 'stable'
 
-      # Create project structure if it doesn't exist. This makes the workflow robust.
-      - name: Create Flutter Project
-        run: flutter create .
-
+      - name: Create Flutter Project Structure (if necessary)
+        run: |
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "pubspec.yaml not found. Creating a new Flutter project..."
+            flutter create .
+          else
+            echo "Project already exists."
+          fi
+      
       - name: Get dependencies
         run: flutter pub get
 
@@ -43,12 +48,10 @@ jobs:
           echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/key.properties
-          # The path to the keystore file relative to the 'android' directory
           echo "storeFile=../app/upload-keystore.jks" >> android/key.properties
 
       - name: Build APK
         run: |
-          # Clean previous builds to be safe
           flutter clean
           flutter build apk --release
 
