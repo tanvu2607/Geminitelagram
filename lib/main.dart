@@ -1,14 +1,10 @@
-import 'package:ai_trading_assistant/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:okx_trade_assistant/providers/trading_provider.dart';
+import 'package:okx_trade_assistant/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => HomeScreenProvider(),
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -16,14 +12,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AI Trading Assistant',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomeScreen(),
-    );
+    return ChangeNotifierProvider(create: (context) => TradingProvider(),
+        child: MaterialApp(
+          title: 'OKX Future Assistant',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: const HomeScreen(),
+        ));
   }
 }
-
-class HomeScreenProvider with ChangeNotifier{}
