@@ -7,39 +7,37 @@ class AnalysisResult {
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
     return AnalysisResult(
       summary: AnalysisSummary.fromJson(json['summary']),
-      suggestions: List<TradeSuggestion>.from(json['suggestions']
-              .map((x) => TradeSuggestion.fromJson(x)) ??
-          []),
+      suggestions: List<TradeSuggestion>.from(
+          json['suggestions'].map((x) => TradeSuggestion.fromJson(x))),
     );
   }
 }
 
 class AnalysisSummary {
-  final String overallTrend;
-  // Add other relevant fields
-  AnalysisSummary({required this.overallTrend});
-
-  factory AnalysisSummary.fromJson(Map<String, dynamic> json) =>
-      AnalysisSummary(overallTrend: json['overallTrend']);
+  final String overallSentiment;
+  AnalysisSummary({required this.overallSentiment});
+  factory AnalysisSummary.fromJson(Map<String, dynamic> json) => AnalysisSummary(
+        overallSentiment: json['overallSentiment'],
+      );
 }
 
 class TradeSuggestion {
-  final String action;
-  final double entryPrice;
-  final double stopLoss;
+  final String action; //e.g., 'buy', 'sell', 'hold'
+  final double entryPrice; //optional
   final double takeProfit;
-  // Add other relevant fields
+  final double stopLoss;
+
   TradeSuggestion({
     required this.action,
-    required this.entryPrice,
-    required this.stopLoss,
     required this.takeProfit,
+    required this.stopLoss,
+    this.entryPrice = 0.0,
   });
 
   factory TradeSuggestion.fromJson(Map<String, dynamic> json) => TradeSuggestion(
         action: json['action'],
-        entryPrice: json['entryPrice']?.toDouble(),
-        stopLoss: json['stopLoss']?.toDouble(),
-        takeProfit: json['takeProfit']?.toDouble(),
+        entryPrice: json['entryPrice']?.toDouble() ?? 0.0,
+        takeProfit: json['takeProfit']?.toDouble() ?? 0.0,
+        stopLoss: json['stopLoss']?.toDouble() ?? 0.0,
       );
 }
