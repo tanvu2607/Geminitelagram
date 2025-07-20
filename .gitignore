@@ -1,0 +1,37 @@
+# Flutter
+.dart_tool/
+*.iml
+build/
+.DS_Store
+*.log
+**/.DS_Store
+*.vscode
+
+# IDEs
+.idea/
+
+# Logs
+*.log
+*.out
+log/
+*.tmp
+*.bak
+*.swp
+
+# Android
+.gradle/
+build/
+captures/
+gradlew
+gradlew.bat
+local.properties
+*.apk
+*.aab
+
+# iOS
+*.xcworkspace
+*.xcodeproj
+build/
+DerivedData/
+Pods/
+Podfile.lock
