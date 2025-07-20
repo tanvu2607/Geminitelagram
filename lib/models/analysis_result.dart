@@ -1,41 +1,43 @@
 class AnalysisResult {
-  final AnalysisSummary analysisSummary;
-  final TradeSuggestion tradeSuggestion;
+  final AnalysisSummary summary;
+  final List<TradeSuggestion> suggestions;
 
-  AnalysisResult({required this.analysisSummary, required this.tradeSuggestion});
+  AnalysisResult({required this.summary, required this.suggestions});
 
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
     return AnalysisResult(
-      analysisSummary: AnalysisSummary.fromJson(json['analysis_summary']),
-      tradeSuggestion: TradeSuggestion.fromJson(json['trade_suggestion']),
+      summary: AnalysisSummary.fromJson(json['summary']),
+      suggestions: List<TradeSuggestion>.from(json['suggestions']
+              .map((x) => TradeSuggestion.fromJson(x)))
+          .toList(),
     );
   }
 }
 
 class AnalysisSummary {
-  final String symbol;
-  final String rsiAnalysis;
+  final String overallSentiment;
 
-  AnalysisSummary({required this.symbol, required this.rsiAnalysis});
+  AnalysisSummary({required this.overallSentiment});
 
   factory AnalysisSummary.fromJson(Map<String, dynamic> json) {
-    return AnalysisSummary(
-      symbol: json['symbol'],
-      rsiAnalysis: json['rsi_analysis'],
-    );
+    return AnalysisSummary(overallSentiment: json['overallSentiment']);
   }
 }
 
 class TradeSuggestion {
-  final String decision;
-  final String reasoning;
+  final String action;
+  final double entryPrice;
+  final double stopLoss;
+  final double takeProfit;
 
-  TradeSuggestion({required this.decision, required this.reasoning});
+  TradeSuggestion(
+      {required this.action, required this.entryPrice, required this.stopLoss, required this.takeProfit});
 
   factory TradeSuggestion.fromJson(Map<String, dynamic> json) {
     return TradeSuggestion(
-      decision: json['decision'],
-      reasoning: json['reasoning'],
-    );
+        action: json['action'],
+        entryPrice: json['entryPrice'].toDouble(),
+        stopLoss: json['stopLoss'].toDouble(),
+        takeProfit: json['takeProfit'].toDouble());
   }
 }
