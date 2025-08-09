@@ -1,0 +1,27 @@
+# Android/IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Gradle
+.gradle/
+**/build/
+/local.properties
+
+# Log/OS
+*.log
+Thumbs.db
+
+# Keystore
+*.jks
+*.keystore
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+
+# NDK/Cache
+.cxx/
