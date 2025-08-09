@@ -22,19 +22,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages
+        shell: bash
         run: |
-          set -e
-          mkdir -p "$ANDROID_SDK_ROOT"
-          curl -fo sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          unzip -q sdk.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
-          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          yes | "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
-          "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+          set -euo pipefail
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install \
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
 
       - name: Download Gradle
         run: |
