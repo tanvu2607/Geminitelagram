@@ -1,0 +1,63 @@
+name: AI Auto Fix (Android CI)
+
+on:
+  workflow_run:
+    workflows: ["Android APK CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ai-fix:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download failed run logs
+        shell: bash
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+          curl -L -H "Authorization: Bearer ${GH_TOKEN}" \
+               -H "Accept: application/vnd.github+json" \
+               "https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${RUN_ID}/logs" \
+               -o logs.zip
+          unzip -q logs.zip -d logs
+          echo "Collected logs:" && ls -R logs | head -200
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run AI fixer
+        shell: bash
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 scripts/ai_fix.py logs || echo "Fixer returned non-zero; continuing"
+
+      - name: Create Pull Request with fixes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ai-fix/${{ github.event.workflow_run.id }}
+          commit-message: "ci(ai-fix): apply automated fixes based on failed run ${{ github.event.workflow_run.id }}"
+          title: "AI Fix: Automated fixes for run ${{ github.event.workflow_run.id }}"
+          body: |
+            This PR was created automatically by the AI fixer.
+            It parsed the failed logs and applied safe, heuristic fixes to CI/build configuration.
+            Please review the changes.
+          labels: ai-fix, ci
+          delete-branch: true
