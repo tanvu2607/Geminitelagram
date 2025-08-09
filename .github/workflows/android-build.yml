@@ -45,6 +45,10 @@ jobs:
           echo "GRADLE_HOME=$PWD/gradle-8.7" >> $GITHUB_ENV
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
 
+      - name: Configure Android SDK for Gradle
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
       - name: Gradle version
         run: gradle --version | cat
 
